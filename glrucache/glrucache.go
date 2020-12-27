@@ -6,16 +6,17 @@ import (
 
 type Cache struct {
 	capacity int
-	Cache    map[interface{}]*Node
+	Cache    map[interface{}]*CacheEntry
+	Head     *CacheEntry
+	Tail     *CacheEntry
+
 	CacheOperations
-	Front *Node
-	Rear  *Node
 }
 
-type Node struct {
-	next, prev *Node
-	Value      interface{}
-	Key        interface{}
+type CacheEntry struct {
+	nextEntry, prevEntry *CacheEntry
+	Value                interface{}
+	Key                  interface{}
 }
 
 type CacheOperations interface {
@@ -27,7 +28,7 @@ func NewCache(capacity int) (*Cache, error) {
 	if capacity > 0 {
 		return &Cache{
 			capacity: capacity,
-			Cache:    make(map[interface{}]*Node, capacity),
+			Cache:    make(map[interface{}]*CacheEntry, capacity),
 		}, nil
 	}
 
@@ -35,67 +36,59 @@ func NewCache(capacity int) (*Cache, error) {
 }
 
 func (c *Cache) Get(key interface{}) (interface{}, bool) {
-	if node, ok := c.Cache[key]; ok {
-		c.removeNode(node)
-		c.moveToFront(node)
-		return node.Value, true
+	if entry, ok := c.Cache[key]; ok {
+		c.removeCacheEntry(entry)
+		c.moveToHead(entry)
+		return entry.Value, true
 	}
 
 	return nil, false
 }
 
 func (c *Cache) Set(key, value interface{}) bool {
-	if node, exists := c.Cache[key]; exists {
-		c.removeNode(node)
+	if entry, exists := c.Cache[key]; exists {
+		c.removeCacheEntry(entry)
 	}
 
-	newNode := &Node{Key: key, Value: value, next: c.Front, prev: nil}
+	newCacheEntry := &CacheEntry{Key: key, Value: value, nextEntry: c.Head, prevEntry: nil}
+	c.moveToHead(newCacheEntry)
 
-	c.moveToFront(newNode)
-
-	// remove least recently used node i.e .rear
+	// remove least recently used entry i.e .rear
 	if len(c.Cache) > c.capacity {
-		c.removeNode(c.Rear)
+		c.removeCacheEntry(c.Tail)
 	}
 
 	return true
 }
 
-func (c *Cache) moveToFront(node *Node) {
-	// push front node after given node
-	if c.Front != nil {
-		c.Front.prev = node
-		node.prev = nil
-		node.next = c.Front
+func (c *Cache) moveToHead(entry *CacheEntry) {
+	if c.Head != nil {
+		c.Head.prevEntry = entry
+		entry.nextEntry = c.Head
+		c.Head = entry
 	}
 
-	// if give node is the only node
-	if c.Rear == nil && c.Front == nil {
-		c.Rear, c.Front = node, node
-		node.prev = nil
-		node.next = nil
+	if c.Head == nil && c.Tail == nil {
+		c.Tail, c.Head = entry, entry
 	}
 
-	c.Front = node
-	c.Cache[node.Key] = node
+	c.Cache[entry.Key] = entry
 }
 
-func (c *Cache) removeNode(node *Node) {
-	if node == nil {
+func (c *Cache) removeCacheEntry(entry *CacheEntry) {
+	if entry == nil {
 		return
 	}
 
-	// if there is a node before given node
-	if node.prev != nil {
-		node.prev.next = node.next
+	if entry.prevEntry != nil {
+		entry.prevEntry.nextEntry = entry.nextEntry
 	}
 
-	// if there is a node after given node
-	if node.next != nil {
-		node.next.prev = node.prev
+	if entry.nextEntry != nil {
+		entry.nextEntry.prevEntry = entry.prevEntry
 	} else {
-		c.Rear = node.prev
+		c.Tail = entry.prevEntry
 	}
 
-	delete(c.Cache, node.Key)
+	delete(c.Cache, entry.Key)
 }

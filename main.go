@@ -18,26 +18,26 @@ func main() {
 	c.Set("2", "c")
 	c.Set("3", "d")
 	c.Set("4", "e")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 
 	// Get data from the cache
 	c.Get("0")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 
 	// Update data
 	c.Set("1", "f")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 
 	// Push new data
 	c.Set("5", "q")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 	c.Set("6", "w")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 	c.Set("7", "we")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 	c.Set("1", "90")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 
 	c.Get("6")
-	fmt.Println("Cache:", c.Front, c.Rear)
+	fmt.Println("Cache:", c.Head, c.Tail)
 }
